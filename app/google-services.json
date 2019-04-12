@@ -1,0 +1,44 @@
+{
+  "project_info": {
+    "project_number": "438138716363",
+    "firebase_url": "https://at-apps-903b8.firebaseio.com",
+    "project_id": "at-apps-903b8",
+    "storage_bucket": "at-apps-903b8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:438138716363:android:416e501ee516045d",
+        "android_client_info": {
+          "package_name": "com.aryantech.atapps"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "438138716363-ht6gpepgc0gru4099sn99pedn81f6h40.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.aryantech.atapps",
+            "certificate_hash": "c24cc8cff2b95219af57cdb58dcbcebe34c88118"
+          }
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC1oJxXrjUKpumAkoXd9es7ZzmePjbBb2I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "438138716363-63rbuqmqve43cm10icfbviek6a0agnmf.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

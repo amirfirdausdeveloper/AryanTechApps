@@ -1,0 +1,57 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <net.doo.snap.camera.ScanbotCameraView
+        android:id="@+id/cameraView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <net.doo.snap.ui.PolygonView
+            android:id="@+id/polygonView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:polygonStrokeWidth="8dp"
+            app:polygonStrokeColor="@color/material_deep_teal_200"
+            app:polygonFillColor="#55009688"/>
+
+    </net.doo.snap.camera.ScanbotCameraView>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|left"
+        android:layout_margin="16dp"
+        android:background="@android:color/white"
+        android:gravity="center"
+        android:padding="10dp"
+        android:text="Please snap front image of your passport with MRZ."
+        android:textColor="@android:color/holo_red_dark" />
+
+    <Button
+        android:id="@+id/snapButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:background="@color/colorAryan"
+        android:text="CAPTURE"
+        android:textColor="@android:color/white" />
+
+    <View
+        android:id="@+id/finder_overlay2"
+        android:layout_width="match_parent"
+        android:layout_height="360dp"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:layout_marginTop="100dp"
+        android:background="@drawable/mrz_finder_bg" />
+
+    <ImageView
+        android:id="@+id/resultImageView"
+        android:layout_width="match_parent"
+        android:layout_height="400dp"
+        android:layout_gravity="center_vertical|center_horizontal" />
+
+</FrameLayout>

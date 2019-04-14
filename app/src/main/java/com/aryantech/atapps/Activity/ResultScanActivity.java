@@ -12,7 +12,9 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
@@ -76,10 +78,9 @@ public class ResultScanActivity extends AppCompatActivity {
         intent.putExtra(EXTRA_personalNumber, result.personalNumber);
         intent.putExtra(EXTRA_travelDocTyp, result.travelDocType.name());
 
-        Log.d("1",result.optional1);
-        Log.d("2",result.optional2);
-        Log.d("3",result.documentCode);
-        Log.d("4",result.travelDocType.name());
+        Log.d("1",result.issuingStateOrOrganization);
+        Log.d("2",result.departmentOfIssuance);
+        Log.d("3",result.discreetIssuingStateOrOrganization);
 
         return intent;
     }
@@ -88,7 +89,7 @@ public class ResultScanActivity extends AppCompatActivity {
     Bitmap passport;
     ImageView imageView_face,imageView_passport;
     EditText editText_firstName,editText_surName,editText_passportNo,editText_gender,editText_issuingCountry,
-            editText_nationality,editText_dob,editText_exDate,editText_myKad,editText_issuingDate,editText_placeBirth;
+            editText_nationality,editText_dob,editText_exDate,editText_myKad,editText_issuingDate,editText_placeBirth,editText_phone,editText_issuePlace;
 
     LinearLayout linear_placeBirth,linear_myKad;
     String ic_no = "";
@@ -103,6 +104,13 @@ public class ResultScanActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     String formattedDate = "";
     StandardProgressDialog standardProgressDialog;
+    String days = "";
+    String months = "";
+    String years = "";
+    String dayss = "";
+    String monthss = "";
+    String yearss = "";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -141,6 +149,8 @@ public class ResultScanActivity extends AppCompatActivity {
         editText_myKad = findViewById(R.id.editText_myKad);
         editText_issuingDate = findViewById(R.id.editText_issuingDate);
         editText_placeBirth = findViewById(R.id.editText_placeBirth);
+        editText_phone = findViewById(R.id.editText_phone);
+        editText_issuePlace = findViewById(R.id.editText_issuePlace);
 
         linear_placeBirth = findViewById(R.id.linear_placeBirth);
         linear_myKad = findViewById(R.id.linear_myKad);
@@ -150,8 +160,7 @@ public class ResultScanActivity extends AppCompatActivity {
         imageView_passport.setImageBitmap(MRZStillImageDetectionActivity.getImage());
         passport = MRZStillImageDetectionActivity.getImage();
 
-        editText_firstName.setText(getIntent().getStringExtra(EXTRA_firstName));
-        editText_surName.setText(getIntent().getStringExtra(EXTRA_lastName));
+
         editText_passportNo.setText(getIntent().getStringExtra(EXTRA_documentCode));
         editText_gender.setText(getIntent().getStringExtra(EXTRA_gender));
         editText_issuingCountry.setText(getIntent().getStringExtra(EXTRA_issuingStateOrOrganization));
@@ -164,6 +173,10 @@ public class ResultScanActivity extends AppCompatActivity {
         storagePassport = getIntent().getStringExtra(EXTRA_documentCode) + "/ Passport" + "/" ;
 
         if(getIntent().getStringExtra(EXTRA_nationality).equals("MYS")){
+
+            editText_firstName.setText(getIntent().getStringExtra(EXTRA_lastName)+" "+getIntent().getStringExtra(EXTRA_firstName));
+            editText_surName.setText("");
+
             linear_placeBirth.setVisibility(View.VISIBLE);
             linear_myKad.setVisibility(View.VISIBLE);
             editText_myKad.setText(getIntent().getStringExtra(EXTRA_personalNumber));
@@ -203,17 +216,100 @@ public class ResultScanActivity extends AppCompatActivity {
                 editText_placeBirth.setText("KUALA LUMPUR");
             }
         }else{
+            editText_firstName.setText(getIntent().getStringExtra(EXTRA_firstName));
+            editText_surName.setText(getIntent().getStringExtra(EXTRA_lastName));
+
+
             linear_placeBirth.setVisibility(View.GONE);
             linear_myKad.setVisibility(View.GONE);
+        }
+
+        if(getIntent().getStringExtra(EXTRA_nationality).equals("IDN")){
+            editText_firstName.setText(getIntent().getStringExtra(EXTRA_lastName)+" "+getIntent().getStringExtra(EXTRA_firstName));
+            editText_surName.setText("");
         }
 
         button_save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 standardProgressDialog.show();
-                saveFirebase();
+
+                if(editText_issuingDate.getText().toString().equals("")){
+                    standardProgressDialog.dismiss();
+                    Toast.makeText(getApplicationContext(),"Please insert ISSUING DATE",Toast.LENGTH_SHORT).show();
+                }else if(editText_phone.getText().toString().equals("")){
+                    standardProgressDialog.dismiss();
+                    Toast.makeText(getApplicationContext(),"Please insert phone no",Toast.LENGTH_SHORT).show();
+                }else if(editText_issuePlace.getText().toString().equals("")){
+                    standardProgressDialog.dismiss();
+                    Toast.makeText(getApplicationContext(),"Please insert issue place",Toast.LENGTH_SHORT).show();
+                }else{
+                    saveFirebase();
+                }
+
             }
         });
+
+        TextWatcher tw = ValidationBirthday();
+        editText_issuingDate.addTextChangedListener(tw);
+    }
+
+    @NonNull
+    private TextWatcher ValidationBirthday() {
+        return new TextWatcher() {
+            private String current = "";
+            private String ddmmyyyy = "DDMMYYYY";
+            private Calendar cal = Calendar.getInstance();
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (!s.toString().equals(current)) {
+                    String clean = s.toString().replaceAll("[^\\d.]|\\.", "");
+                    String cleanC = current.replaceAll("[^\\d.]|\\.", "");
+                    int cl = clean.length();
+                    int sel = cl;
+                    for (int i = 2; i <= cl && i < 6; i += 2) {
+                        sel++;
+                    }
+                    if (clean.equals(cleanC)) sel--;
+                    if (clean.length() < 8) {
+                        clean = clean + ddmmyyyy.substring(clean.length());
+                    } else {
+                        int day = Integer.parseInt(clean.substring(0, 2));
+                        int mon = Integer.parseInt(clean.substring(2, 4));
+                        int year = Integer.parseInt(clean.substring(4, 8));
+                        mon = mon < 1 ? 1 : mon > 12 ? 12 : mon;
+                        cal.set(Calendar.MONTH, mon - 1);
+                        year = (year < 1900) ? 1900 : (year > 2100) ? 2100 : year;
+                        cal.set(Calendar.YEAR, year);
+                        day = (day > cal.getActualMaximum(Calendar.DATE)) ? cal.getActualMaximum(Calendar.DATE) : day;
+
+
+                        clean = String.format("%02d%02d%02d", day, mon, year);
+                        dayss = String.valueOf(day);
+                        monthss = String.valueOf(mon);
+                        yearss = String.valueOf(year);
+                    }
+                    clean = String.format("%s-%s-%s", clean.substring(0, 2),
+                            clean.substring(2, 4),
+                            clean.substring(4, 8));
+                    sel = sel < 0 ? 0 : sel;
+                    current = clean;
+
+
+                    editText_issuingDate.setText(current);
+                    editText_issuingDate.setSelection(sel < current.length() ? sel : current.length());
+                }
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        };
     }
 
     private void detectFaceGALERY(Bitmap bitmap) {
@@ -354,6 +450,7 @@ public class ResultScanActivity extends AppCompatActivity {
     }
 
     public void UploadImageFileToFirebaseStorage() {
+
             String id = databaseReference.push().getKey();
             Passport passport = new Passport(
                     id,
@@ -365,6 +462,9 @@ public class ResultScanActivity extends AppCompatActivity {
                     editText_nationality.getText().toString(),
                     editText_dob.getText().toString(),
                     editText_exDate.getText().toString(),
+                    editText_issuingDate.getText().toString(),
+                    editText_phone.getText().toString(),
+                    editText_issuePlace.getText().toString(),
                     editText_myKad.getText().toString(),
                     editText_placeBirth.getText().toString(),
                     photoStringLink,
@@ -376,6 +476,9 @@ public class ResultScanActivity extends AppCompatActivity {
 
             Intent next = new Intent(getApplicationContext(),DashboardActivity.class);
             startActivity(next);
+
+
+
     }
 
 }

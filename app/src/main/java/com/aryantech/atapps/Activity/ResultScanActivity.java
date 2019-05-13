@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.net.Uri;
+import android.os.Environment;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -15,6 +16,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Base64;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
@@ -24,8 +26,20 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.activeandroid.query.Select;
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+import com.aryantech.atapps.Activity.Camera.MRZLiveDetectionActivity;
 import com.aryantech.atapps.Activity.Camera.MRZStillImageDetectionActivity;
 import com.aryantech.atapps.Activity.Class.Passport;
+import com.aryantech.atapps.Activity.Class.PassportDB;
 import com.aryantech.atapps.R;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -33,6 +47,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.vision.Frame;
+import com.google.android.gms.vision.L;
 import com.google.android.gms.vision.face.Face;
 import com.google.android.gms.vision.face.FaceDetector;
 import com.google.firebase.auth.AuthResult;
@@ -44,12 +59,29 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 import io.scanbot.mrzscanner.model.MRZRecognitionResult;
+
+import static com.android.volley.Request.Method.POST;
 
 public class ResultScanActivity extends AppCompatActivity {
 
@@ -110,7 +142,10 @@ public class ResultScanActivity extends AppCompatActivity {
     String dayss = "";
     String monthss = "";
     String yearss = "";
-
+    Button button_save2;
+    SimpleDateFormat df;
+    Date dates,c;
+    String url_images_local = "";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -119,11 +154,12 @@ public class ResultScanActivity extends AppCompatActivity {
 
         standardProgressDialog = new StandardProgressDialog(this.getWindow().getContext());
 
-        Date c = Calendar.getInstance().getTime();
+        c = Calendar.getInstance().getTime();
         System.out.println("Current time => " + c);
 
-        SimpleDateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         formattedDate = df.format(c);
+
 
         mAuth = FirebaseAuth.getInstance();
         FirebaseUser user = mAuth.getCurrentUser();
@@ -156,9 +192,9 @@ public class ResultScanActivity extends AppCompatActivity {
         linear_myKad = findViewById(R.id.linear_myKad);
         button_save = findViewById(R.id.button_save);
 
-        detectFaceGALERY(MRZStillImageDetectionActivity.getImage());
-        imageView_passport.setImageBitmap(MRZStillImageDetectionActivity.getImage());
-        passport = MRZStillImageDetectionActivity.getImage();
+        detectFaceGALERY(MRZLiveDetectionActivity.getImage());
+        imageView_passport.setImageBitmap(MRZLiveDetectionActivity.getImage());
+        passport = MRZLiveDetectionActivity.getImage();
 
 
         editText_passportNo.setText(getIntent().getStringExtra(EXTRA_documentCode));
@@ -244,7 +280,7 @@ public class ResultScanActivity extends AppCompatActivity {
                     standardProgressDialog.dismiss();
                     Toast.makeText(getApplicationContext(),"Please insert issue place",Toast.LENGTH_SHORT).show();
                 }else{
-                    saveFirebase();
+                    saveToDatabase();
                 }
 
             }
@@ -252,7 +288,72 @@ public class ResultScanActivity extends AppCompatActivity {
 
         TextWatcher tw = ValidationBirthday();
         editText_issuingDate.addTextChangedListener(tw);
+
+        button_save2 = findViewById(R.id.button_save2);
+        button_save2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                boolean status = true;
+                List<PassportDB> inventories = getAll();
+                for (int i = 0; i < inventories.size(); i++) {
+                    PassportDB inventory = inventories.get(i);
+                       if(inventory.pass_no.equals(editText_passportNo.getText().toString())){
+                           Log.d("ada","ada");
+                           status = false;
+                           break;
+                       }else{
+                           status = true;
+                         Log.d("xda","xda");
+                         break;
+                       }
+                }
+//
+                if(status == true){
+                    SaveImage(MRZLiveDetectionActivity.getImage());
+                    PassportDB pp = new PassportDB();
+                    pp.first_name = editText_firstName.getText().toString();
+                    pp.last_name = editText_surName.getText().toString();
+                    pp.pass_no = editText_passportNo.getText().toString();
+                    pp.gender = editText_gender.getText().toString();
+                    pp.country_code = editText_issuingCountry.getText().toString();
+                    pp.citizenship = editText_nationality.getText().toString();
+                    pp.birth_date = editText_dob.getText().toString();
+                    pp.expiry_date = editText_exDate.getText().toString();
+                    pp.issuing_date = editText_issuingDate.getText().toString();
+                    pp.no_phone = editText_phone.getText().toString();
+                    pp.issuing_off = editText_issuePlace.getText().toString();
+                    pp.ic_no = editText_myKad.getText().toString();
+                    pp.birth_place = editText_placeBirth.getText().toString();
+                    pp.scan_date = c;
+                    pp.pas_img = url_images_local;
+                    pp.type = "Passport";
+                    pp.uploadStatus = "0";
+                    pp.save();
+
+                    Toast.makeText(getApplicationContext(),"Save local success",Toast.LENGTH_LONG).show();
+                    Intent next = new Intent(getApplicationContext(),DashboardActivity.class);
+                    startActivity(next);
+                }else {
+                    Toast.makeText(getApplicationContext(),"Record already exist",Toast.LENGTH_LONG).show();
+                }
+
+
+
+
+            }
+        });
+
+        getAll();
     }
+
+    private List<PassportDB> getAll() {
+        //Getting all items stored in Inventory table
+        return new Select()
+                .from(PassportDB.class)
+                .orderBy("scan_date DESC")
+                .execute();
+    }
+
 
     @NonNull
     private TextWatcher ValidationBirthday() {
@@ -290,7 +391,7 @@ public class ResultScanActivity extends AppCompatActivity {
                         monthss = String.valueOf(mon);
                         yearss = String.valueOf(year);
                     }
-                    clean = String.format("%s-%s-%s", clean.substring(0, 2),
+                    clean = String.format("%s.%s.%s", clean.substring(0, 2),
                             clean.substring(2, 4),
                             clean.substring(4, 8));
                     sel = sel < 0 ? 0 : sel;
@@ -469,7 +570,8 @@ public class ResultScanActivity extends AppCompatActivity {
                     editText_placeBirth.getText().toString(),
                     photoStringLink,
                     passportStringLink,
-                    formattedDate);
+                    formattedDate,
+                    "1");
             databaseReference.child(id).setValue(passport);
             Toast.makeText(this, "Successful", Toast.LENGTH_LONG).show();
             standardProgressDialog.dismiss();
@@ -479,6 +581,113 @@ public class ResultScanActivity extends AppCompatActivity {
 
 
 
+    }
+
+    private void SaveImage(Bitmap finalBitmap) {
+
+        String root = Environment.getExternalStorageDirectory().toString();
+        File myDir = new File(root + "/saved_images");
+        myDir.mkdirs();
+        Random generator = new Random();
+        int n = 10000;
+        n = generator.nextInt(n);
+        String fname = "Image-"+ n +".jpg";
+        File file = new File (myDir, fname);
+        if (file.exists ())
+            file.delete ();
+        try {
+            FileOutputStream out = new FileOutputStream(file);
+            finalBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
+            out.flush();
+            out.close();
+
+            url_images_local = Environment.getExternalStorageDirectory()+ "/saved_images/"+fname;
+            Log.d("FILE",url_images_local);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String getStringImage(Bitmap bmp) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bmp.compress(Bitmap.CompressFormat.JPEG, 30, baos);
+        byte[] imageBytes = baos.toByteArray();
+        final String imageString = Base64.encodeToString(imageBytes, Base64.DEFAULT);
+        return imageString;
+    }
+
+    private void saveToDatabase(){
+        JSONObject data = new JSONObject();
+        try {
+            data.put("pass_no",editText_passportNo.getText().toString());
+
+            data.put("type","P");
+            data.put("expiry_date",editText_exDate.getText().toString());
+            data.put("birth_date",editText_dob.getText().toString());
+            data.put("issuing_date",editText_issuingDate.getText().toString());
+            data.put("issuing_off",editText_issuePlace.getText().toString());
+            data.put("birth_place",editText_placeBirth.getText().toString());
+            if(editText_myKad.getText().toString().equals("")){
+                data.put("ic_no","");
+                data.put("first_name",editText_firstName.getText().toString());
+                data.put("last_name",editText_surName.getText().toString());
+            }else{
+                data.put("ic_no",editText_myKad.getText().toString());
+                data.put("first_name",editText_firstName.getText().toString()+" "+editText_surName.getText().toString());
+
+            }
+
+            data.put("gender",editText_gender.getText().toString());
+            data.put("citizenship",editText_nationality.getText().toString());
+            data.put("country_code",editText_issuingCountry.getText().toString());
+            data.put("height","180");
+            data.put("no_phone",editText_phone.getText().toString());
+            data.put("scan_date",formattedDate);
+            data.put("photo_filename",editText_passportNo.getText().toString());
+            data.put("pas_img",getStringImage(MRZStillImageDetectionActivity.getImage()));
+            data.put("agent_id","1");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        RequestQueue mQueue = Volley.newRequestQueue(getApplicationContext());
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest("http://aryantech.asuscomm.com/cdic/save_db.php", data,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            if(response.getString("status").equals("true")){
+                                Toast.makeText(getApplicationContext(),"Save to server success",Toast.LENGTH_LONG).show();
+                                Intent next = new Intent(getApplicationContext(),DashboardActivity.class);
+                                startActivity(next);
+                            }
+                        } catch (JSONException e) {
+                            Toast.makeText(getApplicationContext(),"No Internet Connection", Toast.LENGTH_LONG).show();
+                            e.printStackTrace();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e("TAG", error.getMessage(), error);
+            }
+        }) {
+            @Override
+            public String getBodyContentType(){
+                return "application/json";
+            }
+        };
+        mQueue.add(jsonObjectRequest);
+    }
+
+    public void parseVolleyError(VolleyError error) {
+        try {
+            String responseBody = new String(error.networkResponse.data, "utf-8");
+            JSONObject data = new JSONObject(responseBody);
+            Log.d("ERROR",data.toString());
+        } catch (JSONException e) {
+        } catch (UnsupportedEncodingException errorr) {
+        }
     }
 
 }

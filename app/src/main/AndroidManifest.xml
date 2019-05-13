@@ -16,9 +16,12 @@
         android:largeHeap="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppThemeNoActionBar">
-        <activity android:name=".Activity.HistoryActivity"></activity>
+        android:theme="@style/AppThemeNoActionBar"
+        android:usesCleartextTraffic="true">
+        <activity android:name=".Activity.EditActivity"></activity>
+        <activity android:name=".Activity.HistoryActivity" />
         <activity android:name=".Activity.ResultScanActivity" />
+        <activity android:name=".Activity.Camera.MRZLiveDetectionActivity" />
         <activity android:name=".Activity.Camera.MRZStillImageDetectionActivity" />
         <activity android:name=".Activity.DashboardActivity" />
         <activity android:name=".Activity.MainActivity">
@@ -28,6 +31,22 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <meta-data
+            android:name="AA_DB_NAME"
+            android:value="MyDatabase.db" />
+        <meta-data
+            android:name="AA_DB_VERSION"
+            android:value="5" />
+        <meta-data
+            android:name="AA_MODELS"
+            android:value="com.aryantech.atapps.Activity.Class.PassportDB" />
+
+        <provider
+            android:name="com.activeandroid.content.ContentProvider"
+            android:authorities="com.aryantech.atapps"
+            android:enabled="true"
+            android:exported="false"></provider>
     </application>
 
 </manifest>

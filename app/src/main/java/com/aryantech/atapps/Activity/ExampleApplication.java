@@ -3,6 +3,7 @@ package com.aryantech.atapps.Activity;
 import android.app.Application;
 import android.content.Context;
 
+import com.activeandroid.ActiveAndroid;
 import com.google.firebase.FirebaseApp;
 
 import net.doo.snap.ScanbotSDKInitializer;
@@ -15,6 +16,7 @@ public class ExampleApplication extends Application {
     public static ExampleApplication instance;
     @Override
     public void onCreate() {
+        ActiveAndroid.initialize(this);
         FirebaseApp.initializeApp(this);
         new ScanbotSDKInitializer()
                 // TODO add your license

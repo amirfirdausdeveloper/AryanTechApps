@@ -9,14 +9,19 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.activeandroid.query.Select;
+import com.aryantech.atapps.Activity.Camera.MRZLiveDetectionActivity;
 import com.aryantech.atapps.Activity.Camera.MRZStillImageDetectionActivity;
+import com.aryantech.atapps.Activity.Class.PassportDB;
 import com.aryantech.atapps.R;
+
+import java.util.List;
 
 public class DashboardActivity extends AppCompatActivity {
 
     LinearLayout linear_passport,linear_history;
     private static long back_pressed;
-
+    int totals = 0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,8 +44,13 @@ public class DashboardActivity extends AppCompatActivity {
         linear_passport.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent next = new Intent(getApplicationContext(), MRZStillImageDetectionActivity.class);
-                startActivity(next);
+                if(totals > 50){
+                    Toast.makeText(getApplicationContext(),"Please connect to internet and save data to database in history",Toast.LENGTH_LONG).show();
+                }else{
+                    Intent next = new Intent(getApplicationContext(), MRZLiveDetectionActivity.class);
+                    startActivity(next);
+                }
+
             }
         });
 
@@ -51,6 +61,9 @@ public class DashboardActivity extends AppCompatActivity {
                 startActivity(next);
             }
         });
+
+        getAll();
+        getTotal();
     }
 
     @Override
@@ -58,5 +71,23 @@ public class DashboardActivity extends AppCompatActivity {
         if (back_pressed + 2000 > System.currentTimeMillis())  moveTaskToBack(true);
         else Toast.makeText(getBaseContext(), "Press once again to exit!", Toast.LENGTH_SHORT).show();
         back_pressed = System.currentTimeMillis();
+    }
+
+    private List<PassportDB> getAll() {
+        //Getting all items stored in Inventory table
+        return new Select()
+                .from(PassportDB.class)
+                .orderBy("scan_date DESC")
+                .execute();
+    }
+
+    private void getTotal(){
+        List<PassportDB> inventories = getAll();
+        for (int i = 0; i < inventories.size(); i++) {
+            PassportDB inventory = inventories.get(i);
+            if(inventory.uploadStatus.equals("0")){
+                totals++;
+            }
+        }
     }
 }

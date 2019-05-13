@@ -371,6 +371,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="30dp"
                             android:background="@drawable/custom_edit_text"
+                            android:hint="DD.MM.YYYY"
                             android:inputType="number"
                             android:paddingLeft="10dp"
                             android:textSize="12sp" />
@@ -424,6 +425,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="30dp"
                     android:background="@drawable/custom_edit_text"
+                    android:hint="0134567890"
                     android:inputType="number"
                     android:paddingLeft="10dp"
                     android:textSize="12sp" />
@@ -448,19 +450,38 @@
                     android:layout_width="match_parent"
                     android:layout_height="30dp"
                     android:background="@drawable/custom_edit_text"
+                    android:hint="Place"
                     android:inputType="textWebEmailAddress"
                     android:paddingLeft="10dp"
                     android:textSize="12sp" />
             </LinearLayout>
 
-            <Button
-                android:id="@+id/button_save"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_margin="10dp"
-                android:background="@drawable/custom_linear_layout_button"
-                android:text="SAVE"
-                android:textColor="@android:color/white" />
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/button_save2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/custom_linear_layout_button"
+                    android:text="SAVE LOCAL"
+                    android:textColor="@android:color/white" />
+
+                <Button
+                    android:id="@+id/button_save"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/custom_linear_layout_button"
+                    android:text="SAVE"
+                    android:textColor="@android:color/white" />
+            </LinearLayout>
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

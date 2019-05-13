@@ -19,12 +19,14 @@ public class Passport {
     private String faceURL;
     private String passportURL;
     private String dateScan;
+    private String statusScan;
     public Passport(){
         //this constructor is required
     }
 
     public Passport(String id, String firstName, String secondName, String passportNo, String gender, String issue_country, String nationality,
-                    String dob, String doe,String doi,String phone_no, String issue_place, String myKad, String state_dob, String faceURL, String passportURL, String dateScan) {
+                    String dob, String doe,String doi,String phone_no, String issue_place, String myKad, String state_dob, String faceURL, String passportURL, String dateScan,
+                    String statusScan) {
         this.id = id;
         this.firstName = firstName;
         this.secondName = secondName;
@@ -42,6 +44,11 @@ public class Passport {
         this.faceURL = faceURL;
         this.passportURL = passportURL;
         this.dateScan = dateScan;
+        this.statusScan = statusScan;
+    }
+
+    public String getStatusScan() {
+        return statusScan;
     }
 
     public String getIssue_place() {

@@ -14,6 +14,7 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.InputFilter;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Base64;
@@ -344,6 +345,9 @@ public class ResultScanActivity extends AppCompatActivity {
         });
 
         getAll();
+
+        editText_issuePlace.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
+        editText_placeBirth.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
     }
 
     private List<PassportDB> getAll() {
@@ -359,7 +363,7 @@ public class ResultScanActivity extends AppCompatActivity {
     private TextWatcher ValidationBirthday() {
         return new TextWatcher() {
             private String current = "";
-            private String ddmmyyyy = "DDMMYYYY";
+            private String ddmmyyyy = "DDMMYY";
             private Calendar cal = Calendar.getInstance();
 
             @Override
@@ -381,7 +385,7 @@ public class ResultScanActivity extends AppCompatActivity {
                         int year = Integer.parseInt(clean.substring(4, 8));
                         mon = mon < 1 ? 1 : mon > 12 ? 12 : mon;
                         cal.set(Calendar.MONTH, mon - 1);
-                        year = (year < 1900) ? 1900 : (year > 2100) ? 2100 : year;
+                        year = (year < 01) ? 01 : (year > 99) ? 99 : year;
                         cal.set(Calendar.YEAR, year);
                         day = (day > cal.getActualMaximum(Calendar.DATE)) ? cal.getActualMaximum(Calendar.DATE) : day;
 
@@ -393,7 +397,7 @@ public class ResultScanActivity extends AppCompatActivity {
                     }
                     clean = String.format("%s.%s.%s", clean.substring(0, 2),
                             clean.substring(2, 4),
-                            clean.substring(4, 8));
+                            clean.substring(4, 6));
                     sel = sel < 0 ? 0 : sel;
                     current = clean;
 

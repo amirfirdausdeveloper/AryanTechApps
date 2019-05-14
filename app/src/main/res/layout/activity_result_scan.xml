@@ -371,10 +371,12 @@
                             android:layout_width="match_parent"
                             android:layout_height="30dp"
                             android:background="@drawable/custom_edit_text"
-                            android:hint="DD.MM.YYYY"
+                            android:hint="DD.MM.YY"
                             android:inputType="number"
                             android:paddingLeft="10dp"
                             android:textSize="12sp" />
+
+
                     </LinearLayout>
 
                 </LinearLayout>
@@ -454,6 +456,8 @@
                     android:inputType="textWebEmailAddress"
                     android:paddingLeft="10dp"
                     android:textSize="12sp" />
+
+
             </LinearLayout>
 
             <LinearLayout

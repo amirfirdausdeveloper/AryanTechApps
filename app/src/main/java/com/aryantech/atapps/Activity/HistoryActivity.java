@@ -71,7 +71,6 @@ public class HistoryActivity extends AppCompatActivity {
     }
 
     private List<PassportDB> getAll() {
-        //Getting all items stored in Inventory table
         return new Select()
                 .from(PassportDB.class)
                 .orderBy("scan_date DESC")
@@ -119,7 +118,7 @@ public class HistoryActivity extends AppCompatActivity {
             }
         }
 
-        inventoryItemsAdapter= new HistoryList(passports,getApplicationContext());
+        inventoryItemsAdapter= new HistoryList(passports,HistoryActivity.this);
         listView.setAdapter(inventoryItemsAdapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -134,7 +133,7 @@ public class HistoryActivity extends AppCompatActivity {
                 next.putExtra("cc",dataModel.getSecondName());
                 next.putExtra("d",dataModel.getPassportNo());
                 next.putExtra("e",dataModel.getGender());
-                next.putExtra("f",dataModel.getIssue_country());
+                next.putExtra("f",dataModel.getNationality());
                 next.putExtra("g",dataModel.getNationality());
                 next.putExtra("h",dataModel.getDob());
                 next.putExtra("i",dataModel.getDoe());
@@ -187,7 +186,7 @@ public class HistoryActivity extends AppCompatActivity {
 
         }
 
-        inventoryItemsAdapter= new HistoryList(passports,getApplicationContext());
+        inventoryItemsAdapter= new HistoryList(passports,HistoryActivity.this);
         listView.setAdapter(inventoryItemsAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override

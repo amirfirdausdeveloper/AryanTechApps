@@ -346,6 +346,14 @@ public class ResultScanActivity extends AppCompatActivity {
 
         getAll();
 
+        editText_firstName.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
+        editText_surName.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
+        editText_passportNo.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
+
+        editText_gender.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
+        editText_issuingCountry.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
+        editText_nationality.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
+
         editText_issuePlace.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
         editText_placeBirth.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
     }
@@ -649,7 +657,7 @@ public class ResultScanActivity extends AppCompatActivity {
             data.put("no_phone",editText_phone.getText().toString());
             data.put("scan_date",formattedDate);
             data.put("photo_filename",editText_passportNo.getText().toString());
-            data.put("pas_img",getStringImage(MRZStillImageDetectionActivity.getImage()));
+            data.put("pas_img",getStringImage(MRZLiveDetectionActivity.getImage()));
             data.put("agent_id","1");
         } catch (JSONException e) {
             e.printStackTrace();
@@ -661,6 +669,27 @@ public class ResultScanActivity extends AppCompatActivity {
                     public void onResponse(JSONObject response) {
                         try {
                             if(response.getString("status").equals("true")){
+                                SaveImage(MRZLiveDetectionActivity.getImage());
+                                PassportDB pp = new PassportDB();
+                                pp.first_name = editText_firstName.getText().toString();
+                                pp.last_name = editText_surName.getText().toString();
+                                pp.pass_no = editText_passportNo.getText().toString();
+                                pp.gender = editText_gender.getText().toString();
+                                pp.country_code = editText_issuingCountry.getText().toString();
+                                pp.citizenship = editText_nationality.getText().toString();
+                                pp.birth_date = editText_dob.getText().toString();
+                                pp.expiry_date = editText_exDate.getText().toString();
+                                pp.issuing_date = editText_issuingDate.getText().toString();
+                                pp.no_phone = editText_phone.getText().toString();
+                                pp.issuing_off = editText_issuePlace.getText().toString();
+                                pp.ic_no = editText_myKad.getText().toString();
+                                pp.birth_place = editText_placeBirth.getText().toString();
+                                pp.scan_date = c;
+                                pp.pas_img = url_images_local;
+                                pp.type = "Passport";
+                                pp.uploadStatus = "1";
+                                pp.save();
+
                                 Toast.makeText(getApplicationContext(),"Save to server success",Toast.LENGTH_LONG).show();
                                 Intent next = new Intent(getApplicationContext(),DashboardActivity.class);
                                 startActivity(next);

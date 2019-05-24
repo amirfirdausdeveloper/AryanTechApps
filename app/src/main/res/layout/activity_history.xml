@@ -67,7 +67,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:gravity="center"
-                    android:text="Send to server"
+                    android:text="Local History"
                     android:textColor="@android:color/white" />
             </LinearLayout>
 
@@ -90,7 +90,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:gravity="center"
-                    android:text="Sent to server"
+                    android:text="Server History"
                     android:textColor="@android:color/white" />
             </LinearLayout>
         </LinearLayout>

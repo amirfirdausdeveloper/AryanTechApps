@@ -4,8 +4,12 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.InputFilter;
+import android.text.TextWatcher;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
@@ -24,6 +28,7 @@ import com.android.volley.toolbox.Volley;
 import com.aryantech.atapps.Activity.Camera.MRZStillImageDetectionActivity;
 import com.aryantech.atapps.Activity.Class.PassportDB;
 import com.aryantech.atapps.R;
+import com.google.android.gms.vision.L;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.storage.StorageReference;
@@ -34,6 +39,7 @@ import org.json.JSONObject;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 public class EditActivity extends AppCompatActivity {
@@ -150,18 +156,114 @@ public class EditActivity extends AppCompatActivity {
         }
 
 
-
         button_save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                PassportDB model = selectField("pass_no", editText_passportNo.getText().toString());
-                model.uploadStatus = "1";
-                model.save();
+                if(editText_firstName.getText().toString().equals("")){
+                    Toast.makeText(getApplicationContext(),"insert first name", Toast.LENGTH_LONG).show();
+                }else if(editText_surName.getText().toString().equals("")) {
+                    Toast.makeText(getApplicationContext(), "insert second name", Toast.LENGTH_LONG).show();
+                }else if(editText_passportNo.getText().toString().equals("")) {
+                    Toast.makeText(getApplicationContext(), "insert passport no", Toast.LENGTH_LONG).show();
+                }else if(editText_gender.getText().toString().equals("")) {
+                    Toast.makeText(getApplicationContext(), "insert gender", Toast.LENGTH_LONG).show();
+                }else if(editText_issuingCountry.getText().toString().equals("")) {
+                    Toast.makeText(getApplicationContext(), "insert issuing country", Toast.LENGTH_LONG).show();
+                }else if(editText_nationality.getText().toString().equals("")) {
+                    Toast.makeText(getApplicationContext(), "insert nationality", Toast.LENGTH_LONG).show();
+                }else if(editText_dob.getText().toString().equals("")) {
+                    Toast.makeText(getApplicationContext(), "insert dob", Toast.LENGTH_LONG).show();
+                }else if(editText_exDate.getText().toString().equals("")) {
+                    Toast.makeText(getApplicationContext(), "insert expiry date", Toast.LENGTH_LONG).show();
+                }else if(editText_issuingDate.getText().toString().equals("")) {
+                    Toast.makeText(getApplicationContext(), "insert issuing date", Toast.LENGTH_LONG).show();
+                }else if(editText_phone.getText().toString().equals("")) {
+                    Toast.makeText(getApplicationContext(), "insert phone no", Toast.LENGTH_LONG).show();
+                }else if(editText_issuePlace.getText().toString().equals("")) {
+                    Toast.makeText(getApplicationContext(), "insert issue place", Toast.LENGTH_LONG).show();
+                }else{
+                    PassportDB model = selectField("pass_no", editText_passportNo.getText().toString());
+                    model.uploadStatus = "1";
+                    model.save();
 
-                standardProgressDialog.show();
-                saveToDatabase();
+                    standardProgressDialog.show();
+                    saveToDatabase();
+                }
+
             }
         });
+
+        editText_firstName.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
+        editText_surName.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
+        editText_passportNo.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
+
+        editText_gender.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
+        editText_issuingCountry.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
+        editText_nationality.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
+
+        editText_issuePlace.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
+        editText_placeBirth.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
+
+        TextWatcher tw = ValidationBirthday();
+        editText_issuingDate.addTextChangedListener(tw);
+    }
+
+    @NonNull
+    private TextWatcher ValidationBirthday() {
+        return new TextWatcher() {
+            private String current = "";
+            private String ddmmyyyy = "DDMMYY";
+            private Calendar cal = Calendar.getInstance();
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (!s.toString().equals(current)) {
+                    String clean = s.toString().replaceAll("[^\\d.]|\\.", "");
+                    String cleanC = current.replaceAll("[^\\d.]|\\.", "");
+                    int cl = clean.length();
+                    int sel = cl;
+                    for (int i = 2; i <= cl && i < 6; i += 2) {
+                        sel++;
+                    }
+                    if (clean.equals(cleanC)) sel--;
+                    if (clean.length() < 8) {
+                        clean = clean + ddmmyyyy.substring(clean.length());
+                    } else {
+                        int day = Integer.parseInt(clean.substring(0, 2));
+                        int mon = Integer.parseInt(clean.substring(2, 4));
+                        int year = Integer.parseInt(clean.substring(4, 8));
+                        mon = mon < 1 ? 1 : mon > 12 ? 12 : mon;
+                        cal.set(Calendar.MONTH, mon - 1);
+                        year = (year < 01) ? 01 : (year > 99) ? 99 : year;
+                        cal.set(Calendar.YEAR, year);
+                        day = (day > cal.getActualMaximum(Calendar.DATE)) ? cal.getActualMaximum(Calendar.DATE) : day;
+
+
+                        clean = String.format("%02d%02d%02d", day, mon, year);
+                        dayss = String.valueOf(day);
+                        monthss = String.valueOf(mon);
+                        yearss = String.valueOf(year);
+                    }
+                    clean = String.format("%s.%s.%s", clean.substring(0, 2),
+                            clean.substring(2, 4),
+                            clean.substring(4, 6));
+                    sel = sel < 0 ? 0 : sel;
+                    current = clean;
+
+
+                    editText_issuingDate.setText(current);
+                    editText_issuingDate.setSelection(sel < current.length() ? sel : current.length());
+                }
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        };
     }
 
     public static PassportDB selectField(String fieldName, String fieldValue) {

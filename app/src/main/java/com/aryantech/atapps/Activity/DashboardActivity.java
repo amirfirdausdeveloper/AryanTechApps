@@ -45,7 +45,7 @@ public class DashboardActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if(totals > 50){
-                    Toast.makeText(getApplicationContext(),"Please connect to internet and save data to database in history",Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(),"Please connect to internet and save data to database in history or delete history send to server",Toast.LENGTH_LONG).show();
                 }else{
                     Intent next = new Intent(getApplicationContext(), MRZLiveDetectionActivity.class);
                     startActivity(next);
